@@ -1,7 +1,7 @@
 Day 2: C Programming and Parsing
 ----
 
-In this video, Per showed how to write a lexer in C, and I wrote it in Ruby.
+In the [Day 2 video](https://www.youtube.com/channel/UCguWV1bZg1QiWbY32vGnOLw), Per showed how to write a lexer in C, and I wrote it in Ruby.
 
 Demo:
 
