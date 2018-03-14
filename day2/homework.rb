@@ -31,18 +31,11 @@ class Lexer
   end
 end
 
-# Assignment: Parse an infix expression composed of integer literals and the
-# following operators, highest to lowest precedence:
-#
-# unary -, unary ~ (right associative)
-# * / % << >> &    (left associative)
-# + - | ^          (left associative)
-#
 # EBNF grammar:
 #
 # number = "-" number | "~" number | integer
-# term = number { ( "*" | "/" | "%" | "<<" | ">>" | "&" ) term }
-# expr = term { ( "+" | "-" | "|" | "^" ) expr }
+# term = number | term ( "*" | "/" | "%" | "<<" | ">>" | "&" ) number
+# expr = term | expr ( "+" | "-" | "|" | "^" ) term
 class Parser
   def initialize(str)
     @lexer = Lexer.new(str)
@@ -65,29 +58,28 @@ class Parser
   end
 
   def parse_term
-    number = parse_number
-    case @lexer.token
-    when :*, :/, :%, :<<, :>>, :&
+    term = parse_number
+    while [:*, :/, :%, :<<, :>>, :&].include?(@lexer.token)
       op = @lexer.token
       @lexer.next_token
-      [op, number, parse_term]
-    else
-      number
+      term = [op, term, parse_number]
     end
+    term
   end
 
-  def parse_expression
-    term = parse_term
-    case @lexer.token
-    when nil
-      term
-    when :+, :-, :|, :^
+  def parse_expr
+    expr = parse_term
+    while [:+, :-, :|, :^].include?(@lexer.token)
       op = @lexer.token
       @lexer.next_token
-      [op, term, parse_expression]
-    else
-      raise "Expected expression operator, got #{@lexer.token.inspect}"
+      expr = [op, expr, parse_term]
     end
+
+    if @lexer.token
+      raise "Expected expression operator or end, got #{@lexer.token.inspect}"
+    end
+
+    expr
   end
 end
 
@@ -112,4 +104,4 @@ p tokens
 
 # Test the parser.
 parser = Parser.new(input)
-puts format_s_expr(parser.parse_expression)
+puts format_s_expr(parser.parse_expr)

@@ -19,3 +19,21 @@ TOKEN: {:kind=>"!"}
 TOKEN: {:kind=>:int, :value=>994}
 TOKEN: {:kind=>"\n"}
 ```
+
+Homework
+--
+
+Assignment: Parse an infix expression composed of integer literals and the
+following operators, highest to lowest precedence:
+
+    unary -, unary ~ (right associative)
+    * / % << >> &    (left associative)
+    + - | ^          (left associative)
+
+Demo:
+
+```text
+$ ruby homework.rb <<< "12*34 + 45/56 + ~25"
+[12, :*, 34, :+, 45, :/, 56, :+, :~, 25]
+(+ (+ (* 12 34) (/ 45 56)) (~ 25))
+```
