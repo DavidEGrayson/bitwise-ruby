@@ -27,7 +27,6 @@ Assignment: Parse an infix expression composed of integer literals and the
 following operators, highest to lowest precedence:
 
     unary -, unary ~ (right associative)
-    **               (right associative)  (extra credit)
     * / % << >> &    (left associative)
     + - | ^          (left associative)
 
