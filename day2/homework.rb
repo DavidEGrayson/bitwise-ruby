@@ -1,16 +1,23 @@
 class Lexer
-  attr_reader :token
-
   def initialize(str)
     @stream = str.each_char
   end
 
-  def next_token
+  def peek
+    @token = read_next_token if !@started
+    @token
+  end
+
+  def next
+    token = peek
     @token = read_next_token
+    token
   end
 
   private
   def read_next_token
+    @started = true
+
     while [' ', "\n"].include?(@stream.peek)
       @stream.next
     end
@@ -46,33 +53,28 @@ end
 class Parser
   def initialize(str)
     @lexer = Lexer.new(str)
-    @lexer.next_token
   end
 
   def parse_expr5
-    case @lexer.token
+    case @lexer.peek
     when Integer
-      int = @lexer.token
-      @lexer.next_token
-      int
+      @lexer.next
     when :"("
-      @lexer.next_token
+      @lexer.next
       expr = parse_expr1
-      if @lexer.token != :")"
-        raise "Expected closing paren, got #{@lexer.token.inspect}."
+      ending = @lexer.next
+      if ending != :")"
+        raise "Expected closing paren, got #{ending.inspect}."
       end
-      @lexer.next_token
       expr
     end
   end
 
   # Unary right associatitvity is easy.
   def parse_expr4
-    case @lexer.token
+    case @lexer.peek
     when :-, :~
-      op = @lexer.token
-      @lexer.next_token
-      [op, parse_expr4]
+      [@lexer.next, parse_expr4]
     else
       parse_expr5
     end
@@ -81,11 +83,9 @@ class Parser
   # Binary right associativity is easy.
   def parse_expr3
     expr = parse_expr4
-    case @lexer.token
+    case @lexer.peek
     when :**
-      op = @lexer.token
-      @lexer.next_token
-      [op, expr, parse_expr3]
+      [@lexer.next, expr, parse_expr3]
     else
       expr
     end
@@ -94,10 +94,8 @@ class Parser
   # Binary left associativity requires a little loop?
   def parse_expr2
     expr = parse_expr3
-    while [:*, :/, :%, :<<, :>>, :&].include?(@lexer.token)
-      op = @lexer.token
-      @lexer.next_token
-      expr = [op, expr, parse_expr3]
+    while [:*, :/, :%, :<<, :>>, :&].include?(@lexer.peek)
+      expr = [@lexer.next, expr, parse_expr3]
     end
     expr
   end
@@ -105,18 +103,16 @@ class Parser
   # Binary left associativity requires a little loop?
   def parse_expr1
     expr = parse_expr2
-    while [:+, :-, :|, :^].include?(@lexer.token)
-      op = @lexer.token
-      @lexer.next_token
-      expr = [op, expr, parse_expr2]
+    while [:+, :-, :|, :^].include?(@lexer.peek)
+      expr = [@lexer.next, expr, parse_expr2]
     end
     expr
   end
 
   def parse_expr
     expr = parse_expr1
-    if @lexer.token
-      raise "Expected end of input, got #{@lexer.token.inspect}."
+    if @lexer.peek
+      raise "Expected end of input, got #{@lexer.peek.inspect}."
     end
     expr
   end
@@ -136,7 +132,7 @@ input = ARGF.read
 # Test the lexer.
 lexer = Lexer.new(input)
 tokens = []
-while token = lexer.next_token
+while token = lexer.next
   tokens << token
 end
 p tokens
