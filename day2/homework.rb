@@ -23,7 +23,12 @@ class Lexer
       end
       value
     when '*', '+', '/', '+', '~'
-      @stream.next.intern
+      op = @stream.next.intern
+      if @stream.peek == '*'
+        op = :**
+        @stream.next
+      end
+      op
     else
       raise "I dunno #{@stream.peek.inspect}"
     end
@@ -33,53 +38,72 @@ end
 
 # EBNF grammar:
 #
-# number = "-" number | "~" number | integer
-# term = number | term ( "*" | "/" | "%" | "<<" | ">>" | "&" ) number
-# expr = term | expr ( "+" | "-" | "|" | "^" ) term
+# expr4 = "-" expr4 | "~" expr4 | integer
+# expr3 = expr4
+# expr2 = expr3 | expr2 ( "*" | "/" | "%" | "<<" | ">>" | "&" ) expr3
+# expr1 = expr2 | expr1 ( "+" | "-" | "|" | "^" ) expr2
 class Parser
   def initialize(str)
     @lexer = Lexer.new(str)
     @lexer.next_token
   end
 
-  def parse_number
+  # Unary right associatitvity is easy.
+  def parse_expr4
     case @lexer.token
     when :-, :~
       op = @lexer.token
       @lexer.next_token
-      [op, parse_number]
+      [op, parse_expr4]
     when Integer
-      num = @lexer.token
+      int = @lexer.token
       @lexer.next_token
-      num
+      int
     else
       raise "Expected a number or unary operator, got #{@lexer.token}."
     end
   end
 
-  def parse_term
-    term = parse_number
+  # Binary right associativity is easy.
+  def parse_expr3
+    expr = parse_expr4
+    case @lexer.token
+    when :**
+      op = @lexer.token
+      @lexer.next_token
+      [op, expr, parse_expr3]
+    else
+      expr
+    end
+  end
+
+  # Binary left associativity requires a little loop?
+  def parse_expr2
+    expr = parse_expr3
     while [:*, :/, :%, :<<, :>>, :&].include?(@lexer.token)
       op = @lexer.token
       @lexer.next_token
-      term = [op, term, parse_number]
+      expr = [op, expr, parse_expr3]
     end
-    term
+    expr
   end
 
-  def parse_expr
-    expr = parse_term
+  # Binary left associativity requires a little loop?
+  def parse_expr1
+    expr = parse_expr2
     while [:+, :-, :|, :^].include?(@lexer.token)
       op = @lexer.token
       @lexer.next_token
-      expr = [op, expr, parse_term]
+      expr = [op, expr, parse_expr2]
     end
-
     if @lexer.token
       raise "Expected expression operator or end, got #{@lexer.token.inspect}"
     end
-
     expr
+  end
+
+  def parse_expr
+    parse_expr1
   end
 end
 
