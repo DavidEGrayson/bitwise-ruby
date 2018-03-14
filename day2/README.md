@@ -31,7 +31,10 @@ following operators, highest to lowest precedence:
     * / % << >> &    (left associative)
     + - | ^          (left associative)
 
-And allow parentheses for extra credit.
+I also did the first two extra credit objectives:
+
+- Add right-associative exponentiation operator `**`.
+- Add parenthesis support.
 
 Demo:
 

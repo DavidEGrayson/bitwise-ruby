@@ -49,7 +49,6 @@ class Parser
     @lexer.next_token
   end
 
-  # Adding parentheses in makes this recursive and non-regular.
   def parse_expr5
     case @lexer.token
     when Integer
