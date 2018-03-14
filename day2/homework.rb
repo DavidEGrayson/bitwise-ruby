@@ -87,6 +87,7 @@ class Parser
 
   # Unary right associatitvity is easy.
   def parse_expr4
+    @lexer.expected.concat [:-, :~]
     case @lexer.peek
     when :-, :~
       [@lexer.next, parse_expr4]
