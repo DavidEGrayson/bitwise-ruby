@@ -66,12 +66,12 @@ class Parser
     case @lexer.peek
     when Integer
       @lexer.next
-    when :"("
+    when :'('
       @lexer.next
       expr = parse_expr1
       ending = @lexer.peek
-      if ending != :")"
-        @lexer.expected << :")"
+      if ending != :')'
+        @lexer.expected << :')'
         raise ParseError, "Expected any of #{@lexer.expected.inspect}, " \
                           "got #{ending.inspect}."
       end
@@ -79,7 +79,7 @@ class Parser
       expr
     else
       @lexer.expected << 'integer'
-      @lexer.expected << :"("
+      @lexer.expected << :'('
       raise ParseError, "Expected any of #{@lexer.expected.inspect}, " \
                         "got #{ending.inspect}."
     end
