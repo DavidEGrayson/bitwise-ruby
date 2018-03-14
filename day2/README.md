@@ -43,3 +43,10 @@ $ ruby homework.rb <<< '12*34 + 45/56 + ~(25**2)**3**4'
 (+ (+ (* 12 34) (/ 45 56)) (** (~ (** 25 2)) (** 3 4)))
 ```
 
+I also made the parser have nicer error messages than you usually see:
+
+```text
+$ ruby homework.rb <<< '(12'
+[:"(", 12]
+Expected any of [:**, :*, :/, :%, :<<, :>>, :&, :+, :-, :|, :^, :")"], got nil.
+```

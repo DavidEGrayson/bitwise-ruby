@@ -1,6 +1,12 @@
+class ParseError < RuntimeError
+end
+
 class Lexer
+  attr_reader :expected
+
   def initialize(str)
     @stream = str.each_char
+    @expected = []
   end
 
   def peek
@@ -9,6 +15,7 @@ class Lexer
   end
 
   def next
+    @expected = []
     token = peek
     @token = read_next_token
     token
@@ -62,11 +69,19 @@ class Parser
     when :"("
       @lexer.next
       expr = parse_expr1
-      ending = @lexer.next
+      ending = @lexer.peek
       if ending != :")"
-        raise "Expected closing paren, got #{ending.inspect}."
+        @lexer.expected << :")"
+        raise ParseError, "Expected any of #{@lexer.expected.inspect}, " \
+                          "got #{ending.inspect}."
       end
+      @lexer.next
       expr
+    else
+      @lexer.expected << 'integer'
+      @lexer.expected << :"("
+      raise ParseError, "Expected any of #{@lexer.expected.inspect}, " \
+                        "got #{ending.inspect}."
     end
   end
 
@@ -87,32 +102,37 @@ class Parser
     when :**
       [@lexer.next, expr, parse_expr3]
     else
+      @lexer.expected << :'**'
       expr
     end
   end
 
   # Binary left associativity requires a little loop?
   def parse_expr2
+    ops = [:*, :/, :%, :<<, :>>, :&]
     expr = parse_expr3
-    while [:*, :/, :%, :<<, :>>, :&].include?(@lexer.peek)
+    while ops.include?(@lexer.peek)
       expr = [@lexer.next, expr, parse_expr3]
     end
+    @lexer.expected.concat ops
     expr
   end
 
   # Binary left associativity requires a little loop?
   def parse_expr1
+    ops = [:+, :-, :|, :^]
     expr = parse_expr2
-    while [:+, :-, :|, :^].include?(@lexer.peek)
+    while ops.include?(@lexer.peek)
       expr = [@lexer.next, expr, parse_expr2]
     end
+    @lexer.expected.concat ops
     expr
   end
 
   def parse_expr
     expr = parse_expr1
     if @lexer.peek
-      raise "Expected end of input, got #{@lexer.peek.inspect}."
+      raise ParseError, "Expected end of input, got #{@lexer.peek.inspect}."
     end
     expr
   end
@@ -138,5 +158,10 @@ end
 p tokens
 
 # Test the parser.
-parser = Parser.new(input)
-puts format_s_expr(parser.parse_expr)
+begin
+  parser = Parser.new(input)
+  puts format_s_expr(parser.parse_expr)
+rescue ParseError => e
+  $stderr.puts e
+  exit 1
+end
