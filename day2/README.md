@@ -31,11 +31,13 @@ following operators, highest to lowest precedence:
     * / % << >> &    (left associative)
     + - | ^          (left associative)
 
+And allow parentheses for extra credit.
+
 Demo:
 
 ```text
-$ ruby homework.rb <<< "12*34 + 45/56 + ~25**2**3"
-[12, :*, 34, :+, 45, :/, 56, :+, :~, 25, :**, 2, :**, 3]
-(+ (+ (* 12 34) (/ 45 56)) (** (~ 25) (** 2 3)))
+$ ruby homework.rb <<< '12*34 + 45/56 + ~(25**2)**3**4'
+[12, :*, 34, :+, 45, :/, 56, :+, :~, :"(", 25, :**, 2, :")", :**, 3, :**, 4]
+(+ (+ (* 12 34) (/ 45 56)) (** (~ (** 25 2)) (** 3 4)))
 ```
 

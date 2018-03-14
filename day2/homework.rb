@@ -22,9 +22,9 @@ class Lexer
         value = value * 10 + @stream.next.to_i
       end
       value
-    when '*', '+', '/', '+', '~'
+    when '*', '+', '/', '+', '~', '(', ')'
       op = @stream.next.intern
-      if @stream.peek == '*'
+      if op == :* && @stream.peek == '*'
         op = :**
         @stream.next
       end
@@ -38,7 +38,8 @@ end
 
 # EBNF grammar:
 #
-# expr4 = "-" expr4 | "~" expr4 | integer
+# expr5 = integer | "(" expr1 ")"
+# expr4 = "-" expr4 | "~" expr4 | expr5
 # expr3 = expr4
 # expr2 = expr3 | expr2 ( "*" | "/" | "%" | "<<" | ">>" | "&" ) expr3
 # expr1 = expr2 | expr1 ( "+" | "-" | "|" | "^" ) expr2
@@ -48,6 +49,24 @@ class Parser
     @lexer.next_token
   end
 
+  # Adding parentheses in makes this recursive and non-regular.
+  def parse_expr5
+    case @lexer.token
+    when Integer
+      int = @lexer.token
+      @lexer.next_token
+      int
+    when :"("
+      @lexer.next_token
+      expr = parse_expr1
+      if @lexer.token != :")"
+        raise "Expected closing paren, got #{@lexer.token.inspect}."
+      end
+      @lexer.next_token
+      expr
+    end
+  end
+
   # Unary right associatitvity is easy.
   def parse_expr4
     case @lexer.token
@@ -55,12 +74,8 @@ class Parser
       op = @lexer.token
       @lexer.next_token
       [op, parse_expr4]
-    when Integer
-      int = @lexer.token
-      @lexer.next_token
-      int
     else
-      raise "Expected a number or unary operator, got #{@lexer.token}."
+      parse_expr5
     end
   end
 
@@ -96,14 +111,15 @@ class Parser
       @lexer.next_token
       expr = [op, expr, parse_expr2]
     end
-    if @lexer.token
-      raise "Expected expression operator or end, got #{@lexer.token.inspect}"
-    end
     expr
   end
 
   def parse_expr
-    parse_expr1
+    expr = parse_expr1
+    if @lexer.token
+      raise "Expected end of input, got #{@lexer.token.inspect}."
+    end
+    expr
   end
 end
 
