@@ -91,6 +91,15 @@ class Parser
   end
 end
 
+def format_s_expr(expr)
+  case expr
+  when Array
+    '(' + expr.map(&method(:format_s_expr)).join(' ') + ')'
+  else
+    expr.to_s
+  end
+end
+
 input = ARGF.read
 
 # Test the lexer.
@@ -103,4 +112,4 @@ p tokens
 
 # Test the parser.
 parser = Parser.new(input)
-p parser.parse_expression
+puts format_s_expr(parser.parse_expression)
