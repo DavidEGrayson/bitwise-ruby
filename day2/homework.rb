@@ -68,7 +68,7 @@ class Lexer
       end
       op
     else
-      raise "I dunno #{@stream.peek.inspect}"
+      raise ParseError, "I dunno #{@stream.peek.inspect}"
     end
   rescue StopIteration
   end
@@ -78,7 +78,7 @@ end
 #
 # expr5 = integer | "(" expr1 ")"
 # expr4 = "-" expr4 | "~" expr4 | expr5
-# expr3 = expr4
+# expr3 = expr4 [ "**" expr3 ]
 # expr2 = expr3 | expr2 ( "*" | "/" | "%" | "<<" | ">>" | "&" ) expr3
 # expr1 = expr2 | expr1 ( "+" | "-" | "|" | "^" ) expr2
 class Parser
