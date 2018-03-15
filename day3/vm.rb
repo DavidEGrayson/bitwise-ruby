@@ -37,6 +37,10 @@ class VM
             @code[@index + 3].ord << 24
       @stack.push(num)
       @index += 4
+    when Bytecode::DIVIDE
+      right = @stack.pop
+      left = @stack.pop
+      @stack.push left / right
     when Bytecode::ADD
       @stack.push @stack.pop + @stack.pop
     when Bytecode::HALT
