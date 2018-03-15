@@ -1,3 +1,6 @@
+class LexError < RuntimeError
+end
+
 class Lexer
   def self.tokenize(str)
     lexer = Lexer.new(str)
@@ -54,7 +57,7 @@ class Lexer
       end
       op
     else
-      raise ParseError, "I dunno #{@stream.peek.inspect}"
+      raise LexError, "I dunno #{@stream.peek.inspect}"
     end
   end
 end
