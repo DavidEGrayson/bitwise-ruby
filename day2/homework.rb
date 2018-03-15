@@ -81,7 +81,7 @@ class Parser
       @lexer.expected << 'integer'
       @lexer.expected << :'('
       raise ParseError, "Expected any of #{@lexer.expected.inspect}, " \
-                        "got #{ending.inspect}."
+                        "got #{@lexer.peek.inspect}."
     end
   end
 
