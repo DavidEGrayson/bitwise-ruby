@@ -32,12 +32,12 @@ class Lexer
   def read_next_token
     @started = true
 
-    if @str[@index] == nil
-      return nil  # end of input
-    end
-
     while [' ', "\n"].include?(@str[@index])
       @index += 1
+    end
+
+    if @str[@index] == nil
+      return nil  # end of input
     end
 
     case @str[@index]
