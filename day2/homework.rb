@@ -23,18 +23,25 @@ class Lexer
 
   def error
     msg = "Expected any of #{@expected.inspect}, " \
-          "got #{@token.inspect}."
+          "got #{peek.inspect}."
     ParseError.new(msg)
   end
 
-  def require(*matchers)
+  def try(*matchers)
     @expected.concat matchers
     token = peek
-    if matchers.any? { |m| m === token }
-      self.next
-    else
-      raise error
-    end
+    return nil if !matchers.any? { |m| m === token }
+    self.next
+    token
+  end
+
+  def require(*matchers)
+    try(*matchers) or raise error
+  end
+
+  def require_end
+    return if peek == nil
+    raise ParseError, "Expected end of input, got #{peek.inspect}."
   end
 
   private
@@ -80,27 +87,23 @@ class Parser
   end
 
   def parse_expr5
-    case @lexer.peek
+    token = @lexer.require(Integer, :'(')
+    case token
     when Integer
-      @lexer.next
+      token
     when :'('
-      @lexer.next
       expr = parse_expr1
       @lexer.require :')'
       expr
-    else
-      @lexer.expected << Integer
-      @lexer.expected << :'('
-      raise @lexer.error
     end
   end
 
   # Unary right associatitvity is easy.
   def parse_expr4
-    @lexer.expected.concat [:-, :~]
-    case @lexer.peek
+    token = @lexer.try(:-, :~)
+    case token
     when :-, :~
-      [@lexer.next, parse_expr4]
+      [token, parse_expr4]
     else
       parse_expr5
     end
@@ -109,42 +112,34 @@ class Parser
   # Binary right associativity is easy.
   def parse_expr3
     expr = parse_expr4
-    case @lexer.peek
-    when :**
-      [@lexer.next, expr, parse_expr3]
+    if @lexer.try(:**)
+      [:**, expr, parse_expr3]
     else
-      @lexer.expected << :'**'
       expr
     end
   end
 
   # Binary left associativity requires a little loop?
   def parse_expr2
-    ops = [:*, :/, :%, :<<, :>>, :&]
     expr = parse_expr3
-    while ops.include?(@lexer.peek)
-      expr = [@lexer.next, expr, parse_expr3]
+    while token = @lexer.try(:*, :/, :%, :<<, :>>, :&)
+      expr = [token, expr, parse_expr3]
     end
-    @lexer.expected.concat ops
     expr
   end
 
   # Binary left associativity requires a little loop?
   def parse_expr1
-    ops = [:+, :-, :|, :^]
     expr = parse_expr2
-    while ops.include?(@lexer.peek)
-      expr = [@lexer.next, expr, parse_expr2]
+    while token = @lexer.try(:+, :-, :|, :^)
+      expr = [token, expr, parse_expr2]
     end
-    @lexer.expected.concat ops
     expr
   end
 
   def parse_expr
     expr = parse_expr1
-    if @lexer.peek
-      raise ParseError, "Expected end of input, got #{@lexer.peek.inspect}."
-    end
+    @lexer.require_end
     expr
   end
 end
