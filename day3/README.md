@@ -8,8 +8,8 @@ virtual machine.
 
 To play with my compiler and VM implemented in Ruby, use the CLIs:
 
-   $ ./compile.rb <<< '1 + 10/3' | ./run.rb
-   4
+    $ ./compile.rb <<< '1 + 10/3' | ./run.rb
+    4
 
 To run the tests:
 
