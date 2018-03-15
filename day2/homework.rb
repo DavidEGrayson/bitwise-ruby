@@ -100,9 +100,7 @@ class Parser
 
   # Unary right associatitvity is easy.
   def parse_expr4
-    token = @lexer.try(:-, :~)
-    case token
-    when :-, :~
+    if token = @lexer.try(:-, :~)
       [token, parse_expr4]
     else
       parse_expr5
