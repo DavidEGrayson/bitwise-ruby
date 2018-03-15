@@ -57,7 +57,7 @@ class Lexer
       end
       op
     else
-      raise LexError, "I dunno #{@stream.peek.inspect}"
+      raise LexError, "I dunno #{@str[@index].inspect}"
     end
   end
 end
