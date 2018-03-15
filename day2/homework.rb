@@ -27,7 +27,18 @@ class Lexer
     ParseError.new(msg)
   end
 
+  def require(*matchers)
+    @expected.concat matchers
+    token = peek
+    if matchers.any? { |m| m === token }
+      self.next
+    else
+      raise error
+    end
+  end
+
   private
+
   def read_next_token
     @started = true
 
@@ -75,12 +86,7 @@ class Parser
     when :'('
       @lexer.next
       expr = parse_expr1
-      ending = @lexer.peek
-      if ending != :')'
-        @lexer.expected << :')'
-        raise @lexer.error
-      end
-      @lexer.next
+      @lexer.require :')'
       expr
     else
       @lexer.expected << Integer
