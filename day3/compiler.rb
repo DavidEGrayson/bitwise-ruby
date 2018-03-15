@@ -3,7 +3,6 @@ require_relative 'bytecode'
 
 module Compiler
   BinaryOps = {
-    :+ => Bytecode::ADD,
     :** => Bytecode::EXPONENT,
     :* => Bytecode::MULTIPLY,
     :/ => Bytecode::DIVIDE,
