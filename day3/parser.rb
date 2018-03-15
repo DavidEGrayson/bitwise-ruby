@@ -14,7 +14,8 @@ class Lexer
   end
 
   def initialize(str)
-    @stream = str.each_char
+    @str = str
+    @index = 0
     @expected = []
   end
 
@@ -58,28 +59,33 @@ class Lexer
   def read_next_token
     @started = true
 
-    while [' ', "\n"].include?(@stream.peek)
-      @stream.next
+    if @str[@index] == nil
+      return nil  # end of input
     end
 
-    case @stream.peek
+    while [' ', "\n"].include?(@str[@index])
+      @index += 1
+    end
+
+    case @str[@index]
     when '0'..'9'
       value = 0
-      while ('0'..'9').include?(@stream.peek)
-        value = value * 10 + @stream.next.to_i
+      while ('0'..'9').include?(@str[@index])
+        value = value * 10 + @str[@index].to_i
+        @index += 1
       end
       value
     when '*', '+', '/', '+', '~', '-', '(', ')'
-      op = @stream.next.intern
-      if op == :* && @stream.peek == '*'
+      op = @str[@index].intern
+      @index += 1
+      if op == :* && @str[@index] == '*'
         op = :**
-        @stream.next
+        @index += 1
       end
       op
     else
       raise ParseError, "I dunno #{@stream.peek.inspect}"
     end
-  rescue StopIteration
   end
 end
 
@@ -92,7 +98,7 @@ end
 # expr1 = expr2 | expr1 ( "+" | "-" | "|" | "^" ) expr2
 class Parser
   def self.parse(str)
-    new(str).parse_expr(str)
+    new(str).parse_expr
   end
 
   def initialize(str)
