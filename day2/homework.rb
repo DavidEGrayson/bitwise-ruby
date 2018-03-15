@@ -60,7 +60,7 @@ class Lexer
         value = value * 10 + @stream.next.to_i
       end
       value
-    when '*', '+', '/', '+', '~', '(', ')'
+    when '*', '+', '/', '+', '~', '-', '(', ')'
       op = @stream.next.intern
       if op == :* && @stream.peek == '*'
         op = :**
