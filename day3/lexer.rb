@@ -48,13 +48,30 @@ class Lexer
         @index += 1
       end
       value
-    when '*', '+', '/', '+', '~', '-', '(', ')'
+    when '*', '+', '/', '+', '~', '-', '(', ')', '%', '<', '>', '&', '|', '^'
       op = @str[@index].intern
       @index += 1
       if op == :* && @str[@index] == '*'
         op = :**
         @index += 1
       end
+
+      if op == :<
+        if @str[@index] != '<'
+          raise LexError, "After '<' I need another '<' pls."
+        end
+        op = :<<
+        @index += 1
+      end
+
+      if op == :>
+        if @str[@index] != '>'
+          raise LexError, "After '>' I need another '<' pls."
+        end
+        op = :>>
+        @index += 1
+      end
+
       op
     else
       raise LexError, "I dunno #{@str[@index].inspect}"

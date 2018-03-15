@@ -37,12 +37,44 @@ class VM
             @code[@index + 3].ord << 24
       @stack.push(num)
       @index += 4
+    when Bytecode::NEGATE
+      @stack.push -@stack.pop
+    when Bytecode::COMPLEMENT
+      @stack.push ~@stack.pop
+    when Bytecode::EXPONENT
+      right = @stack.pop
+      left = @stack.pop
+      @stack.push left ** right
+    when Bytecode::MULTIPLY
+      @stack.push @stack.pop * @stack.pop
     when Bytecode::DIVIDE
       right = @stack.pop
       left = @stack.pop
       @stack.push left / right
+    when Bytecode::MODULO
+      right = @stack.pop
+      left = @stack.pop
+      @stack.push left % right
+    when Bytecode::LEFT_SHIFT
+      right = @stack.pop
+      left = @stack.pop
+      @stack.push left << right
+    when Bytecode::RIGHT_SHIFT
+      right = @stack.pop
+      left = @stack.pop
+      @stack.push left >> right
+    when Bytecode::AND
+      @stack.push @stack.pop & @stack.pop
     when Bytecode::ADD
       @stack.push @stack.pop + @stack.pop
+    when Bytecode::SUBTRACT
+      right = @stack.pop
+      left = @stack.pop
+      @stack.push left - right
+    when Bytecode::OR
+      @stack.push @stack.pop | @stack.pop
+    when Bytecode::XOR
+      @stack.push @stack.pop ^ @stack.pop
     when Bytecode::HALT
       @halt = true
     else

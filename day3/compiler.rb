@@ -45,23 +45,15 @@ module Compiler
       buffer.concat(int >> 16 & 0xFF)
       buffer.concat(int >> 24 & 0xFF)
     elsif sexp.is_a?(Array)
-      # We check the sexp.size because we don't trust the parser to emit correct
-      # stuff every time and simple checks like this will help us catch issues
-      # earlier.
-
-      if opcode = BinaryOps[sexp.first]
-        if sexp.size != 3
-          raise "Expected #{sexp.first} sexp to have 3 elements, got #{sexp.size}."
-        end
+      # We structure the sexp.size check this way because :- is both a unary and binary op.
+      # That seems like a flaw in the sexp format actually.
+      if sexp.size == 3 && opcode = BinaryOps[sexp.first]
         sexp_to_bytecode(buffer, sexp[1])
         sexp_to_bytecode(buffer, sexp[2])
         buffer.concat(opcode)
       end
 
-      if opcode = UnaryOps[sexp.first]
-        if sexp.size != 2
-          raise "Expected #{sexp.first} sexp to have 2 elements, got #{sexp.size}."
-        end
+      if sexp.size == 2 && opcode = UnaryOps[sexp.first]
         sexp_to_bytecode(buffer, sexp[1])
         buffer.concat(opcode)
       end
