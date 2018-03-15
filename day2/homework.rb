@@ -21,6 +21,12 @@ class Lexer
     token
   end
 
+  def error
+    msg = "Expected any of #{@expected.inspect}, " \
+          "got #{@token.inspect}."
+    ParseError.new(msg)
+  end
+
   private
   def read_next_token
     @started = true
@@ -72,16 +78,14 @@ class Parser
       ending = @lexer.peek
       if ending != :')'
         @lexer.expected << :')'
-        raise ParseError, "Expected any of #{@lexer.expected.inspect}, " \
-                          "got #{ending.inspect}."
+        raise @lexer.error
       end
       @lexer.next
       expr
     else
-      @lexer.expected << 'integer'
+      @lexer.expected << Integer
       @lexer.expected << :'('
-      raise ParseError, "Expected any of #{@lexer.expected.inspect}, " \
-                        "got #{@lexer.peek.inspect}."
+      raise @lexer.error
     end
   end
 
